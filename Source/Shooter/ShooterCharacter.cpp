@@ -21,6 +21,10 @@ AShooterCharacter::AShooterCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	//variable for turn and lookup
+	TurnRate = 45.f;
+	LookupRate = 45.f;
 	
 }
 
@@ -29,6 +33,43 @@ void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AShooterCharacter::MoveForward(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.f))
+	{
+		//find out which direction is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(Direction * Value);
+	}
+	
+}
+
+void AShooterCharacter::MoveRight(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.f))
+	{
+		//find out which direction is right
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		AddMovementInput(Direction * Value);
+	}
+	
+
+}
+
+void AShooterCharacter::TurnAtRate(float Rate)
+{
+	AddControllerYawInput(Rate * TurnRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AShooterCharacter::LookupAtRate(float Rate)
+{
+	AddControllerPitchInput(Rate * LookupRate * GetWorld()->GetDeltaSeconds());
 }
 
 // Called every frame
@@ -42,6 +83,14 @@ void AShooterCharacter::Tick(float DeltaTime)
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	check(PlayerInputComponent)
+
+		PlayerInputComponent->BindAxis("MoveForward", this, &AShooterCharacter::MoveForward);
+	    PlayerInputComponent->BindAxis("MoveRight", this, &AShooterCharacter::MoveRight);
+		PlayerInputComponent->BindAxis("Turn", this, &AShooterCharacter::TurnAtRate);
+		PlayerInputComponent->BindAxis("Lookup", this, &AShooterCharacter::LookupAtRate);
+
 
 }
 
