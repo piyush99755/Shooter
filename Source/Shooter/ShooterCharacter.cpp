@@ -4,6 +4,7 @@
 #include "ShooterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -21,6 +22,18 @@ AShooterCharacter::AShooterCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	//stop character from rotating along with controller rotation
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	//configure character movement
+	//character moves in the direction of input
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.2f;
 
 	//variable for turn and lookup
 	TurnRate = 45.f;

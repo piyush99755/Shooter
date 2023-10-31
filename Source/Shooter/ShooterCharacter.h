@@ -43,13 +43,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		float TurnRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		float LookupRate;
+
+
 public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom()const { return CameraBoom; }
 	
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	float TurnRate;
+	
 
-	float LookupRate;
+	
 };
