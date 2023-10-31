@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Animation/AnimInstance.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -107,6 +108,25 @@ void AShooterCharacter::FireWeapon()
 		{
 			//spawning particles while firing weapon
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
+		}
+
+		FHitResult FireHitResult;
+		const FVector Start = SocketTransform.GetLocation();//getting socket location
+		const FQuat Rotation = SocketTransform.GetRotation(); //getting socket rotation
+		const FVector RotationAxis = Rotation.GetAxisX(); // line tracing straight from socketlocation which points towards x axis
+		const FVector End = Start + RotationAxis * 50'000.f; //calculting end location
+
+		GetWorld()->LineTraceSingleByChannel(FireHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		if (FireHitResult.bBlockingHit)
+		{
+			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
+			DrawDebugPoint(GetWorld(), FireHitResult.Location, 5.f, FColor::Red, false, 2.f);
+
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHitResult.Location);
+			}
 		}
 	}
 
