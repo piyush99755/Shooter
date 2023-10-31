@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -107,6 +108,14 @@ void AShooterCharacter::FireWeapon()
 			//spawning particles while firing weapon
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
 		}
+	}
+
+	//getting reference of anim instance which has function to play animation montage
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("WeaponFire"));
 	}
 	
 	
