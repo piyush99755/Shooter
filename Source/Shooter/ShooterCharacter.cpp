@@ -10,6 +10,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Animation/AnimInstance.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -116,17 +117,34 @@ void AShooterCharacter::FireWeapon()
 		const FVector RotationAxis = Rotation.GetAxisX(); // line tracing straight from socketlocation which points towards x axis
 		const FVector End = Start + RotationAxis * 50'000.f; //calculting end location
 
+		FVector BeamEndPoint = End;
+
 		GetWorld()->LineTraceSingleByChannel(FireHitResult, Start, End, ECollisionChannel::ECC_Visibility);
 
 		if (FireHitResult.bBlockingHit)
 		{
-			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
-			DrawDebugPoint(GetWorld(), FireHitResult.Location, 5.f, FColor::Red, false, 2.f);
+			//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
+			//DrawDebugPoint(GetWorld(), FireHitResult.Location, 5.f, FColor::Red, false, 2.f);
+
+			BeamEndPoint = FireHitResult.Location;
 
 			if (ImpactParticles)
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHitResult.Location);
 			}
+		}
+
+		if (BeamParticles)
+		{
+			//storing spawn emitter value in a particle system component 
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
+
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+			}
+
+
 		}
 	}
 
