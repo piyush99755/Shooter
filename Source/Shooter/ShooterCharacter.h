@@ -19,6 +19,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
@@ -26,6 +27,8 @@ protected:
 	void TurnAtRate(float Rate);
 
 	void LookupAtRate(float Rate);
+
+	void FireWeapon();
 
 public:	
 	// Called every frame
@@ -43,11 +46,21 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	//variables for turning character
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		float TurnRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		float LookupRate;
+
+
+	//sound cue variable when firing weapon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* FireSound;
+
+	//particle system variable
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class UParticleSystem* FireParticles;
 
 
 public:

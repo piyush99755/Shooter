@@ -5,6 +5,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Sound/SoundCue.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -85,6 +88,30 @@ void AShooterCharacter::LookupAtRate(float Rate)
 	AddControllerPitchInput(Rate * LookupRate * GetWorld()->GetDeltaSeconds());
 }
 
+void AShooterCharacter::FireWeapon()
+{
+	//play sound when firing weapon
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
+	}
+
+	//get socket transform for spawn emitter at location function 
+	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+		if (FireParticles)
+		{
+			//spawning particles while firing weapon
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
+		}
+	}
+	
+	
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -106,6 +133,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 		PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+		PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireWeapon);
 
 
 }
