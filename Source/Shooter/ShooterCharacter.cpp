@@ -132,8 +132,8 @@ void AShooterCharacter::FireWeapon()
 		if (bWorldToScreen)
 		{
 			FHitResult ScreenTraceHit;
-			FVector Start = CrosshairWorldPosition;
-			FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
+			const FVector Start = CrosshairWorldPosition;
+			const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
 
 			//set beam end point to line trace end point
 			FVector BeamEndPoint = End;   
@@ -146,10 +146,26 @@ void AShooterCharacter::FireWeapon()
 			{
 				BeamEndPoint = ScreenTraceHit.Location;
 
-				if (ImpactParticles)
-				{
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, ScreenTraceHit.Location);
-				}
+				
+			}
+
+			//perform a second trace but this one from gun barrel
+
+			FHitResult WeaponHitResult;
+			const FVector WeaponStart = SocketTransform.GetLocation();
+			const FVector WeaponEnd = BeamEndPoint;
+
+
+			GetWorld()->LineTraceSingleByChannel(WeaponHitResult, WeaponStart, WeaponEnd, ECollisionChannel::ECC_Visibility);
+			if (WeaponHitResult.bBlockingHit)
+			{
+				BeamEndPoint = WeaponHitResult.Location;
+			}
+
+			if (ImpactParticles)
+			{
+				//impact particles at beam end point
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEndPoint);
 			}
 
 			//even trace hit not hitting any object, still spawn beam particles
