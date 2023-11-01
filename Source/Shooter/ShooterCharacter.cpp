@@ -112,7 +112,61 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
 		}
 
-		FHitResult FireHitResult;
+		FVector2D ViewportSize;
+
+		//getting game view port size
+		if (GEngine && GEngine->GameViewport)
+		{
+			GEngine->GameViewport->GetViewportSize(ViewportSize);
+		}
+
+		//getting crosshair location by dividing x and y axis of viewport by 2.f
+		FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+		CrosshairLocation.Y -= 50.f; // raising crosshair from center by 50.f
+
+		//getting crosshair world position and direction
+		FVector CrosshairWorldPosition;
+		FVector CrosshairWorldDirection;
+		bool bWorldToScreen = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
+
+		if (bWorldToScreen)
+		{
+			FHitResult ScreenTraceHit;
+			FVector Start = CrosshairWorldPosition;
+			FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
+
+			//set beam end point to line trace end point
+			FVector BeamEndPoint = End;   
+
+			//single channel line trace, trace outwards from crosshairs world location
+			GetWorld()->LineTraceSingleByChannel(ScreenTraceHit, Start, End, ECollisionChannel::ECC_Visibility);
+
+			//if trace hit blocking  hit, spawn impact particles beam end point which is ScreenTraceHit.location
+			if (ScreenTraceHit.bBlockingHit)
+			{
+				BeamEndPoint = ScreenTraceHit.Location;
+
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, ScreenTraceHit.Location);
+				}
+			}
+
+			//even trace hit not hitting any object, still spawn beam particles
+			if (BeamParticles)
+			{
+				//storing spawn emitter value in a particle system component 
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
+
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+				}
+			}
+		}
+	    
+
+		/*FHitResult FireHitResult;
 		const FVector Start = SocketTransform.GetLocation();//getting socket location
 		const FQuat Rotation = SocketTransform.GetRotation(); //getting socket rotation
 		const FVector RotationAxis = Rotation.GetAxisX(); // line tracing straight from socketlocation which points towards x axis
@@ -146,7 +200,7 @@ void AShooterCharacter::FireWeapon()
 			}
 
 
-		}
+		}*/
 	}
 
 	//getting reference of anim instance which has function to play animation montage
