@@ -112,60 +112,18 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
 		}
 
-		FVector2D ViewportSize;
+		FVector BeamEnd;
 
-		//getting game view port size
-		if (GEngine && GEngine->GameViewport)
+		//calling the function where both line trace implemented
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+
+		//if bBeamEnd is true then only spawn impact particles and beam particles
+		if (bBeamEnd)
 		{
-			GEngine->GameViewport->GetViewportSize(ViewportSize);
-		}
-
-		//getting crosshair location by dividing x and y axis of viewport by 2.f
-		FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
-		CrosshairLocation.Y -= 50.f; // raising crosshair from center by 50.f
-
-		//getting crosshair world position and direction
-		FVector CrosshairWorldPosition;
-		FVector CrosshairWorldDirection;
-		bool bWorldToScreen = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
-
-		if (bWorldToScreen)
-		{
-			FHitResult ScreenTraceHit;
-			const FVector Start = CrosshairWorldPosition;
-			const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
-
-			//set beam end point to line trace end point
-			FVector BeamEndPoint = End;   
-
-			//single channel line trace, trace outwards from crosshairs world location
-			GetWorld()->LineTraceSingleByChannel(ScreenTraceHit, Start, End, ECollisionChannel::ECC_Visibility);
-
-			//if trace hit blocking  hit, spawn impact particles beam end point which is ScreenTraceHit.location
-			if (ScreenTraceHit.bBlockingHit)
-			{
-				BeamEndPoint = ScreenTraceHit.Location;
-
-				
-			}
-
-			//perform a second trace but this one from gun barrel
-
-			FHitResult WeaponHitResult;
-			const FVector WeaponStart = SocketTransform.GetLocation();
-			const FVector WeaponEnd = BeamEndPoint;
-
-
-			GetWorld()->LineTraceSingleByChannel(WeaponHitResult, WeaponStart, WeaponEnd, ECollisionChannel::ECC_Visibility);
-			if (WeaponHitResult.bBlockingHit)
-			{
-				BeamEndPoint = WeaponHitResult.Location;
-			}
-
 			if (ImpactParticles)
 			{
 				//impact particles at beam end point
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEndPoint);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEnd);
 			}
 
 			//even trace hit not hitting any object, still spawn beam particles
@@ -176,47 +134,11 @@ void AShooterCharacter::FireWeapon()
 
 				if (Beam)
 				{
-					Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+					Beam->SetVectorParameter(FName("Target"), BeamEnd);
 				}
 			}
 		}
-	    
 
-		/*FHitResult FireHitResult;
-		const FVector Start = SocketTransform.GetLocation();//getting socket location
-		const FQuat Rotation = SocketTransform.GetRotation(); //getting socket rotation
-		const FVector RotationAxis = Rotation.GetAxisX(); // line tracing straight from socketlocation which points towards x axis
-		const FVector End = Start + RotationAxis * 50'000.f; //calculting end location
-
-		FVector BeamEndPoint = End;
-
-		GetWorld()->LineTraceSingleByChannel(FireHitResult, Start, End, ECollisionChannel::ECC_Visibility);
-
-		if (FireHitResult.bBlockingHit)
-		{
-			//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
-			//DrawDebugPoint(GetWorld(), FireHitResult.Location, 5.f, FColor::Red, false, 2.f);
-
-			BeamEndPoint = FireHitResult.Location;
-
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHitResult.Location);
-			}
-		}
-
-		if (BeamParticles)
-		{
-			//storing spawn emitter value in a particle system component 
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
-
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
-			}
-
-
-		}*/
 	}
 
 	//getting reference of anim instance which has function to play animation montage
@@ -228,6 +150,64 @@ void AShooterCharacter::FireWeapon()
 	}
 	
 	
+}
+
+bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, FVector& OutBeamLocation)
+{
+	FVector2D ViewportSize;
+
+	//getting game view port size
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	//getting crosshair location by dividing x and y axis of viewport by 2.f
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	CrosshairLocation.Y -= 50.f; // raising crosshair from center by 50.f
+
+	//getting crosshair world position and direction
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	bool bWorldToScreen = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
+
+	if (bWorldToScreen)
+	{
+		FHitResult ScreenTraceHit;
+		const FVector Start = CrosshairWorldPosition;
+		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
+
+		//set beam end point to line trace end point
+		OutBeamLocation = End;
+
+		//single channel line trace, trace outwards from crosshairs world location
+		GetWorld()->LineTraceSingleByChannel(ScreenTraceHit, Start, End, ECollisionChannel::ECC_Visibility);
+
+		//if trace hit blocking  hit, spawn impact particles beam end point which is ScreenTraceHit.location
+		if (ScreenTraceHit.bBlockingHit)
+		{
+			OutBeamLocation = ScreenTraceHit.Location;
+
+
+		}
+
+		//perform a second trace but this one from gun barrel
+
+		FHitResult WeaponHitResult;
+		const FVector WeaponStart = WeaponSocketLocation;
+		const FVector WeaponEnd =OutBeamLocation;
+
+
+		GetWorld()->LineTraceSingleByChannel(WeaponHitResult, WeaponStart, WeaponEnd, ECollisionChannel::ECC_Visibility);
+		if (WeaponHitResult.bBlockingHit)
+		{
+			OutBeamLocation = WeaponHitResult.Location;
+		}
+
+		
+	}
+
+	return false;
 }
 
 // Called every frame
