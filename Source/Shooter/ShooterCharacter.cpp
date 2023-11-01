@@ -204,6 +204,8 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, 
 			OutBeamLocation = WeaponHitResult.Location;
 		}
 
+		return true;
+
 		
 	}
 
