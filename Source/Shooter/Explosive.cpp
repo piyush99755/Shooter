@@ -6,6 +6,7 @@
 #include "Sound/SoundCue.h"
 #include "particles/ParticleSystemComponent.h"
 #include "Engine/World.h"
+#include "Enemy.h"
 
 // Sets default values
 AExplosive::AExplosive()
@@ -19,6 +20,8 @@ AExplosive::AExplosive()
 void AExplosive::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 	
 }
 
@@ -41,6 +44,8 @@ void AExplosive::BulletHit_Implementation(FHitResult HitResult)
 	{
 		UGameplayStatics::PlaySound2D(this, ExplosionSound);
 	}
+
+	
 
 	Destroy();
 }

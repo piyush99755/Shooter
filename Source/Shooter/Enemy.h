@@ -16,11 +16,23 @@ public:
 	// Sets default values for this character's properties
 	AEnemy();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	
+private:
+	//variable for spawn particle
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UParticleSystem* HitParticles;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//variable to play sound
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class USoundCue* HitSound;
+
+	//behavior tree for AI character
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UBehaviorTree* BehaviorTree;
+
+	
+
+	
 
 
 
@@ -37,5 +49,11 @@ public:
 
 	//function inherit from BulletHit Interface
 	virtual void BulletHit_Implementation(FHitResult HitResult)override;
+
+	//getter for behavior tree
+	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
+
+
+	
 
 };
