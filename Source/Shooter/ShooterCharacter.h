@@ -30,7 +30,7 @@ protected:
 
 	void FireWeapon();
 
-	bool GetBeamEndLocation(const FVector& WeaponSocketLocation, FVector& OutBeamLocation);
+	bool GetBeamEndLocation(const FVector& WeaponSocketLocation, FHitResult& OutHitResult);
 
 public:	
 	// Called every frame

@@ -11,6 +11,7 @@
 #include "Animation/AnimInstance.h"
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "BulletHitInterface.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -112,19 +113,36 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireParticles, SocketTransform);
 		}
 
-		FVector BeamEnd;
+		FHitResult BeamHitResult;
 
 		//calling the function where both line trace implemented
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
 
 		//if bBeamEnd is true then only spawn impact particles and beam particles
 		if (bBeamEnd)
 		{
-			if (ImpactParticles)
+			//does actor hit bullet hit interface?
+			if (BeamHitResult.Actor.IsValid())
 			{
-				//impact particles at beam end point
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEnd);
+				
+				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.Actor.Get());
+
+				if (BulletHitInterface)
+				{
+					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
+				}
 			}
+
+			else
+			{
+				if (ImpactParticles)
+				{
+					//impact particles at beam end point
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamHitResult.Location);
+				}
+			}
+
+			
 
 			//even trace hit not hitting any object, still spawn beam particles
 			if (BeamParticles)
@@ -134,7 +152,7 @@ void AShooterCharacter::FireWeapon()
 
 				if (Beam)
 				{
-					Beam->SetVectorParameter(FName("Target"), BeamEnd);
+					Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
 				}
 			}
 		}
@@ -152,8 +170,9 @@ void AShooterCharacter::FireWeapon()
 	
 }
 
-bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, FVector& OutBeamLocation)
+bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, FHitResult& OutHitResult)
 {
+	FVector OutBeamLocation;
 	FVector2D ViewportSize;
 
 	//getting game view port size
@@ -173,7 +192,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, 
 
 	if (bWorldToScreen)
 	{
-		FHitResult ScreenTraceHit;
+		
 		const FVector Start = CrosshairWorldPosition;
 		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
 
@@ -181,27 +200,28 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& WeaponSocketLocation, 
 		OutBeamLocation = End;
 
 		//single channel line trace, trace outwards from crosshairs world location
-		GetWorld()->LineTraceSingleByChannel(ScreenTraceHit, Start, End, ECollisionChannel::ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
 
 		//if trace hit blocking  hit, spawn impact particles beam end point which is ScreenTraceHit.location
-		if (ScreenTraceHit.bBlockingHit)
+		if (!OutHitResult.bBlockingHit)
 		{
-			OutBeamLocation = ScreenTraceHit.Location;
+			OutHitResult.Location = OutBeamLocation;
 
 
 		}
 
 		//perform a second trace but this one from gun barrel
 
-		FHitResult WeaponHitResult;
+		
 		const FVector WeaponStart = WeaponSocketLocation;
 		const FVector WeaponEnd =OutBeamLocation;
 
 
-		GetWorld()->LineTraceSingleByChannel(WeaponHitResult, WeaponStart, WeaponEnd, ECollisionChannel::ECC_Visibility);
-		if (WeaponHitResult.bBlockingHit)
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, WeaponStart, WeaponEnd, ECollisionChannel::ECC_Visibility);
+		if (!OutHitResult.bBlockingHit)
 		{
-			OutBeamLocation = WeaponHitResult.Location;
+			OutHitResult.Location = OutBeamLocation;
+			return false;
 		}
 
 		return true;

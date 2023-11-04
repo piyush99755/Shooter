@@ -4,16 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "BulletHitInterface.h"
 #include "Enemy.generated.h"
 
 UCLASS()
-class SHOOTER_API AEnemy : public ACharacter
+class SHOOTER_API AEnemy : public ACharacter, public IBulletHitInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AEnemy();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UParticleSystem* HitParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class USoundCue* HitSound;
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,5 +34,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//function inherit from BulletHit Interface
+	virtual void BulletHit_Implementation(FHitResult HitResult)override;
 
 };
