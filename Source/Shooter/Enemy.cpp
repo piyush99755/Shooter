@@ -4,12 +4,18 @@
 #include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "DrawDebugHelpers.h"
+#include "EnemyController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	
 
 	
 
@@ -22,6 +28,23 @@ void AEnemy::BeginPlay()
 
 	//set collsion reponse to block, so enemy block bullets from shooter
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	//transform patrol point from local to world
+	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
+
+	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Yellow, true);
+
+	//casting enemy controller
+	 EnemyController = Cast<AEnemyController>(GetController());
+
+	if (EnemyController)
+	{
+		//setting black board key value
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+
+		//it will excute nodes in behavior tree 
+		EnemyController->RunBehaviorTree(BehaviorTree);
+	}
 	
 }
 

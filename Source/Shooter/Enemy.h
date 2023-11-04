@@ -27,11 +27,15 @@ private:
 		class USoundCue* HitSound;
 
 	//behavior tree for AI character
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BehaviorTree", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 
-	
+	//variable for patrol point, which is local to enemy. MakeEditWidget helps for transformation such as translation and rotation in the world
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta= (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BehaviorTree", meta = (AllowPrivateAccess = "true"))
+	class AEnemyController* EnemyController;
 	
 
 
