@@ -18,6 +18,7 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//set collsion reponse to block, so enemy block bullets from shooter
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	
 }
