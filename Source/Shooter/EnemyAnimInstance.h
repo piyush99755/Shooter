@@ -13,5 +13,21 @@ UCLASS()
 class SHOOTER_API UEnemyAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
+
+private:
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float Speed; 
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class AEnemy* Enemy; 
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateAnimationProperties(float DeltaTime);
+
 };

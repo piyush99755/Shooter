@@ -2,4 +2,25 @@
 
 
 #include "EnemyAnimInstance.h"
+#include "Enemy.h"
 
+void UEnemyAnimInstance::UpdateAnimationProperties(float DeltaTime)
+{
+	if (Enemy == nullptr)
+	{
+		Enemy = Cast<AEnemy>(TryGetPawnOwner());
+	}
+
+	
+
+	if (Enemy)
+	{
+		//getting lateral speed of enemy
+		FVector Velocity = Enemy->GetVelocity();
+
+		Velocity.Z = 0.f;
+
+		Speed = Velocity.Size();
+	}
+
+}
