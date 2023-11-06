@@ -30,6 +30,9 @@ AEnemy::AEnemy()
 
 	MinHitReactTime = 0.5f;
 	MaxHitReactTime = 0.75f;
+
+	bStunned = false;
+	StunChance = 0.5f;
 	
 
 }
@@ -100,8 +103,18 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
 	}
 
-	//play hit montage when bullet is hitting enemy 
-	PlayHitMontage(FName("HitReactFront"));
+	
+    const float Stunned = FMath::FRandRange(0.f, 1.f);
+	if (Stunned <= StunChance)
+	{
+			//play hit montage when bullet is hitting enemy 
+		PlayHitMontage(FName("HitReactFront"));
+		SetStunned(true);
+	}
+		
+
+	
+	
 }
 
 void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -140,5 +153,22 @@ void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 void AEnemy::ResetHitReactTimer()
 {
 	bCanHitReact = true; 
+}
+
+void AEnemy::SetStunned(bool Stunned)
+{
+	
+	bStunned = Stunned;
+
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);
+	}
+	
+
+	
+	
+	
+	
 }
 

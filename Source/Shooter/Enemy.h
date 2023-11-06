@@ -63,6 +63,14 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float MaxHitReactTime;
+
+	//variables for stun behavior
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bStunned; 
+
+	//stun chance of enemy on bullet hit
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float StunChance; 
 	
 
 
@@ -93,5 +101,7 @@ public:
 
 	void ResetHitReactTimer();
 	
+	UFUNCTION(BlueprintCallable)
+	void SetStunned(bool Stunned);
 
 };
