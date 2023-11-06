@@ -34,17 +34,35 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta= (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint;
 
+	//patrol point 2 for enemy
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 		FVector PatrolPoint2;
 
 	
-
+	//enemy controller
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BehaviorTree", meta = (AllowPrivateAccess = "true"))
 	class AEnemyController* EnemyController;
 
+	//Sphere component for enemy as collision 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* AgroSphere;
 
+	//montage containing hit and dealth animations 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* EnemyHitMontage;
+
+	//variables to delay hit react animation..
+
+	FTimerHandle HitReactTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bCanHitReact; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float MinHitReactTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float MaxHitReactTime;
 	
 
 
@@ -70,7 +88,10 @@ public:
 	UFUNCTION()
 	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	//function to play enemy hit montage
+	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
 
+	void ResetHitReactTimer();
 	
 
 };

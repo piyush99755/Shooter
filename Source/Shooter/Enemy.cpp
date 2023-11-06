@@ -10,6 +10,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/SphereComponent.h"
 #include "ShooterCharacter.h"
+#include "Animation/AnimInstance.h"
+#include "GameFramework/Actor.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -21,6 +23,13 @@ AEnemy::AEnemy()
 	AgroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
 	AgroSphere->SetupAttachment(GetRootComponent());
 	AgroSphere->SetSphereRadius(400.f);
+
+
+	//in beginning of game value is set to true
+	bCanHitReact = true; 
+
+	MinHitReactTime = 0.5f;
+	MaxHitReactTime = 0.75f;
 	
 
 }
@@ -90,6 +99,9 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
 	}
+
+	//play hit montage when bullet is hitting enemy 
+	PlayHitMontage(FName("HitReactFront"));
 }
 
 void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -104,5 +116,29 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 			EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
 		}
 	}
+}
+
+void AEnemy::PlayHitMontage(FName Section, float PlayRate)
+{
+	if (bCanHitReact)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && EnemyHitMontage)
+		{
+			AnimInstance->Montage_Play(EnemyHitMontage, PlayRate);
+			AnimInstance->Montage_JumpToSection(Section, EnemyHitMontage);
+		}
+    }
+
+	bCanHitReact = false;
+
+	const float HitReactTime = FMath::FRandRange(MinHitReactTime, MaxHitReactTime);
+	 //set timer
+	GetWorldTimerManager().SetTimer(HitReactTimer, this, &AEnemy::ResetHitReactTimer,HitReactTime);
+}
+
+void AEnemy::ResetHitReactTimer()
+{
+	bCanHitReact = true; 
 }
 
