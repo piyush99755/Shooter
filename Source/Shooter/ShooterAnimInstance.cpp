@@ -61,6 +61,9 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			LastMovementOffsetYaw = MovementOffsetYaw;
 		}
 
+		//get aiming value from character class to implement aiming state machine 
+		bAiming = ShooterCharacter->GetAiming();
+
 		
 
 		

@@ -251,17 +251,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// is aiming?
-	if (bAiming)
-	{
-		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, CameraInterpSpeed);
-		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
-	}
-	else
-	{
-		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, CameraInterpSpeed);
-		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
-	}
+	//handle camera interpolation while aiming
+	CameraZoomInterp(DeltaTime);
+	
 }
 
 // Called to bind functionality to input
@@ -301,5 +293,24 @@ void AShooterCharacter::AimingButtonReleased()
 
 	//setting up field of view
 	GetFollowCamera()->SetFieldOfView(CameraDefaultFOV);
-} 
+}
+void AShooterCharacter::CameraZoomInterp(float DeltaTime)
+{
+	// is aiming?
+	if (bAiming)
+	{
+		//interpolate to camera zoom FOV
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, CameraInterpSpeed);
+
+	}
+	else
+	{
+		//interpolate to Camera Default FOV
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, CameraInterpSpeed);
+
+	}
+
+	GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+}
+
 

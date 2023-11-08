@@ -32,6 +32,8 @@ protected:
 
 	bool GetBeamEndLocation(const FVector& WeaponSocketLocation, FHitResult& OutHitResult);
 
+	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -99,11 +101,15 @@ public:
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FORCEINLINE bool GetAiming() const { return bAiming; }
+
 	//handle aiming functionality
 
 	void AimingButtonPressed();
 
 	void AimingButtonReleased();
+
+	void CameraZoomInterp(float DeltaTime);
 
 	
 

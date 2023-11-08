@@ -43,5 +43,8 @@ private:
 
 	//offset yaw the frame before 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float LastMovementOffsetYaw;
+	float LastMovementOffsetYaw;  
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bAiming; 
 };
