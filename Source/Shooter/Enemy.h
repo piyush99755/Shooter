@@ -47,10 +47,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* AgroSphere;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		USphereComponent* AttackSphere;
+
 	//montage containing hit and dealth animations 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UAnimMontage* EnemyHitMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* EnemyAttackMontage;
 	//variables to delay hit react animation..
 
 	FTimerHandle HitReactTimer;
@@ -92,12 +97,19 @@ public:
 	//getter for behavior tree
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 
+	UFUNCTION()
+		void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void AttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 
 	//function to play enemy hit montage
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
+
+
+	//function to play attack anim montage
+	void PlayAttackMontage(FName Section, float PlayRate = 1.f);
 
 	void ResetHitReactTimer();
 	

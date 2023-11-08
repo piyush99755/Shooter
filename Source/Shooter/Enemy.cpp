@@ -22,7 +22,12 @@ AEnemy::AEnemy()
 	//constructing agro sphere and setting up its radius 
 	AgroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
 	AgroSphere->SetupAttachment(GetRootComponent());
-	AgroSphere->SetSphereRadius(400.f);
+	AgroSphere->SetSphereRadius(600.f);
+
+	//constructing enemy's attack sphere 
+	AttackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AttackSphere"));
+	AttackSphere->SetupAttachment(GetRootComponent());
+	AttackSphere->SetSphereRadius(300.f);
 
 
 	//in beginning of game value is set to true
@@ -44,6 +49,7 @@ void AEnemy::BeginPlay()
 
 	//binding callback function to OnComponentBeginOverlap event
 	AgroSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap);
+	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AttackSphereOverlap);
 
 	//set collsion reponse to block, so enemy block bullets from shooter
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
@@ -129,6 +135,11 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 			EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
 		}
 	}
+}
+
+void AEnemy::AttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
