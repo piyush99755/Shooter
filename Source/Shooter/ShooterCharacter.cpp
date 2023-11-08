@@ -22,9 +22,9 @@ AShooterCharacter::AShooterCharacter()
 	//Creates camera boom and declaring its properties 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.f;
+	CameraBoom->TargetArmLength = 200.f;
 	CameraBoom->bUsePawnControlRotation = true;//rotate the arm based on controller
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
 
 	//camera that follows character
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -46,13 +46,27 @@ AShooterCharacter::AShooterCharacter()
 	//variable for turn and lookup
 	TurnRate = 45.f;
 	LookupRate = 45.f;
+
+	CameraDefaultFOV = 0.f;
+	CameraZoomedFOV = 60.f;
 	
+	
+	bAiming = false;
+	CameraInterpSpeed = 20.f;
 }
 
 // Called when the game starts or when spawned
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//getting default value of Camera FOV
+
+	CameraDefaultFOV = GetFollowCamera()->FieldOfView;
+
+	//set camera current FOV to Camera Default FOV..
+	CameraCurrentFOV = CameraDefaultFOV;
+
 	
 }
 
@@ -237,6 +251,17 @@ void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// is aiming?
+	if (bAiming)
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, CameraInterpSpeed);
+		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, CameraInterpSpeed);
+		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+	}
 }
 
 // Called to bind functionality to input
@@ -256,6 +281,25 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireWeapon);
 
+		PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterCharacter::AimingButtonPressed);
+		PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterCharacter::AimingButtonReleased);
+
 
 }
+
+void AShooterCharacter::AimingButtonPressed()
+{
+	bAiming = true;
+
+	//setting up field of view
+	GetFollowCamera()->SetFieldOfView(CameraZoomedFOV);
+}
+
+void AShooterCharacter::AimingButtonReleased()
+{ 
+	bAiming = false;
+
+	//setting up field of view
+	GetFollowCamera()->SetFieldOfView(CameraDefaultFOV);
+} 
 

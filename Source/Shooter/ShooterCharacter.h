@@ -71,8 +71,26 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* BeamParticles;
 
+	//animation montage for character while shooting
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UAnimMontage* HipFireMontage;
+
+	//variables for zoom in functionality
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CameraDefaultFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CameraZoomedFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CameraCurrentFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CameraInterpSpeed; 
+
+	bool bAiming; 
+
+
 
 
 public:
@@ -80,6 +98,12 @@ public:
 	
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	//handle aiming functionality
+
+	void AimingButtonPressed();
+
+	void AimingButtonReleased();
 
 	
 
