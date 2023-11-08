@@ -76,6 +76,16 @@ private:
 	//stun chance of enemy on bullet hit
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float StunChance; 
+
+	//bool to check if player is in attack range
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bInAttackRange; 
+
+	//attack section names
+	FName AttackLAFast;
+	FName AttackRAFast;
+	FName AttackLA;
+	FName AttackRA;
 	
 
 
@@ -101,15 +111,22 @@ public:
 		void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-		void AttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void AttackSphereOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
+	UFUNCTION()
+		void AttackSphereOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	 
 	//function to play enemy hit montage
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
 
 
 	//function to play attack anim montage
+	UFUNCTION(BlueprintCallable)
 	void PlayAttackMontage(FName Section, float PlayRate = 1.f);
+
+	//function to get attack section name from enemy attack montage
+	UFUNCTION(BlueprintPure)
+		FName GetAttackSectionName();
 
 	void ResetHitReactTimer();
 	

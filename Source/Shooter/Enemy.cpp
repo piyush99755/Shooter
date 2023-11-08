@@ -12,6 +12,7 @@
 #include "ShooterCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "GameFramework/Actor.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -27,7 +28,7 @@ AEnemy::AEnemy()
 	//constructing enemy's attack sphere 
 	AttackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AttackSphere"));
 	AttackSphere->SetupAttachment(GetRootComponent());
-	AttackSphere->SetSphereRadius(300.f);
+	AttackSphere->SetSphereRadius(100.f);
 
 
 	//in beginning of game value is set to true
@@ -38,6 +39,8 @@ AEnemy::AEnemy()
 
 	bStunned = false;
 	StunChance = 0.5f;
+
+	
 	
 
 }
@@ -49,10 +52,16 @@ void AEnemy::BeginPlay()
 
 	//binding callback function to OnComponentBeginOverlap event
 	AgroSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap);
-	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AttackSphereOverlap);
+	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AttackSphereOverlapBegin);
+	AttackSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackSphereOverlapEnd);
 
 	//set collsion reponse to block, so enemy block bullets from shooter
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	//prevent enemy to blocking camera 
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
 
 	//transform patrol point from local to world
 	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
@@ -130,16 +139,63 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		//casting to shooter character and set value as object in blackboaard
 		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
 
-		if (ShooterCharacter)
+		if (EnemyController)
 		{
 			EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
 		}
 	}
 }
 
-void AEnemy::AttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AEnemy::AttackSphereOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (OtherActor == nullptr)
+	{
+		return;
+	}
 
+	
+	//casting to shooter character and set value as object in blackboaard
+	AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+
+	if (ShooterCharacter)
+	{
+		bInAttackRange = true;
+
+		if (EnemyController)
+		{
+
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), true);
+		}
+
+	}
+
+	
+	
+}
+
+void AEnemy::AttackSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr)
+	{
+		return;
+	}
+
+	//casting to shooter character and set value as object in blackboaard
+	AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+
+	if (ShooterCharacter)
+	{
+		bInAttackRange = false;
+
+		if (EnemyController)
+		{
+
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), false);
+		}
+	}
+	
+	
+	
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
@@ -159,6 +215,45 @@ void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 	const float HitReactTime = FMath::FRandRange(MinHitReactTime, MaxHitReactTime);
 	 //set timer
 	GetWorldTimerManager().SetTimer(HitReactTimer, this, &AEnemy::ResetHitReactTimer,HitReactTime);
+}
+
+void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EnemyAttackMontage)
+	{
+		AnimInstance->Montage_Play(EnemyAttackMontage, PlayRate);
+		AnimInstance->Montage_JumpToSection(Section, EnemyAttackMontage);
+	}
+}
+
+FName AEnemy::GetAttackSectionName()
+{
+	FName SectionName;
+
+	//getting random attack section name by using switch statement
+	const int32 Section = FMath::RandRange(1, 4);
+
+	switch(Section)
+	{
+	case 1:
+		SectionName = AttackLAFast;
+		break;
+
+	case 2:
+		SectionName = AttackRAFast;
+		break;
+
+	case 3:
+		SectionName = AttackLA;
+		break;
+
+	case 4:
+		SectionName = AttackRA;
+		break;
+
+	}
+	return SectionName;
 }
 
 void AEnemy::ResetHitReactTimer()
