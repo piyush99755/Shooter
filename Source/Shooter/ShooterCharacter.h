@@ -28,9 +28,7 @@ protected:
 
 	void LookupAtRate(float Rate);
 
-	void FireWeapon();
-
-	bool GetBeamEndLocation(const FVector& WeaponSocketLocation, FHitResult& OutHitResult);
+	
 
 	
 
@@ -90,7 +88,21 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpSpeed; 
 
+	//true if aiming , false if is not aiming 
 	bool bAiming; 
+
+	//left mouse button pressed..
+	bool bFireButtonPressed;
+
+	//true when we can fire, false when we wait for timer...
+	bool bShouldFire;
+
+	//rate of automatic gun fire...
+	float AutomaticFireRate;
+
+	FTimerHandle FireTimer;
+
+
 
 
 
@@ -103,6 +115,11 @@ public:
 
 	FORCEINLINE bool GetAiming() const { return bAiming; }
 
+	//firing weapon functionality
+	void FireWeapon();
+
+	bool GetBeamEndLocation(const FVector& WeaponSocketLocation, FHitResult& OutHitResult);
+
 	//handle aiming functionality
 
 	void AimingButtonPressed();
@@ -110,6 +127,18 @@ public:
 	void AimingButtonReleased();
 
 	void CameraZoomInterp(float DeltaTime);
+
+	//implement automatic fire functionality
+
+	void FireButtonPressed();
+
+	void FireButtonReleased();
+
+	void StartFireTimer();
+
+
+	UFUNCTION()
+	void ResetFireTimer();
 
 	
 

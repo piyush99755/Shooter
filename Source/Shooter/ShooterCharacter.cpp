@@ -22,7 +22,7 @@ AShooterCharacter::AShooterCharacter()
 	//Creates camera boom and declaring its properties 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 200.f;
+	CameraBoom->TargetArmLength = 250.f;
 	CameraBoom->bUsePawnControlRotation = true;//rotate the arm based on controller
 	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
 
@@ -53,6 +53,10 @@ AShooterCharacter::AShooterCharacter()
 	
 	bAiming = false;
 	CameraInterpSpeed = 20.f;
+
+	AutomaticFireRate = 0.1f;
+	bShouldFire = true;
+	bFireButtonPressed = false;
 }
 
 // Called when the game starts or when spawned
@@ -271,7 +275,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 		PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-		PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireWeapon);
+		PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireButtonPressed);
+		PlayerInputComponent->BindAction("FireButton", IE_Released, this, &AShooterCharacter::FireButtonReleased);
 
 		PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterCharacter::AimingButtonPressed);
 		PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterCharacter::AimingButtonReleased);
@@ -311,6 +316,46 @@ void AShooterCharacter::CameraZoomInterp(float DeltaTime)
 	}
 
 	GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+}
+
+void AShooterCharacter::FireButtonPressed()
+{
+	bFireButtonPressed = true;
+
+	//this function handles fire functionality along with setting and resetting timer...
+	StartFireTimer();
+}
+
+void AShooterCharacter::FireButtonReleased()
+{
+	bFireButtonPressed = false;
+}
+
+void AShooterCharacter::StartFireTimer()
+{
+	if (bShouldFire)
+	{
+		//if should fire is true fire weapon and set bool to false to prevent from firing..
+		FireWeapon();
+		bShouldFire = false;
+
+		//start fire timer.
+		GetWorldTimerManager().SetTimer(FireTimer, this, &AShooterCharacter::ResetFireTimer, AutomaticFireRate);
+
+	}
+}
+
+void AShooterCharacter::ResetFireTimer()
+{
+	//set boolto true 
+	bShouldFire = true;
+
+	//if fire button is pressed after firing once, call start fire timers to start firing weapon again 
+	if (bFireButtonPressed)
+	{
+		
+		StartFireTimer();
+	}
 }
 
 

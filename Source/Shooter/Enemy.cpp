@@ -68,9 +68,11 @@ void AEnemy::BeginPlay()
 
 	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint2);
 
-	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Yellow, true);
+	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 2.f, 12, FColor::Yellow, false);
 
-	DrawDebugSphere(GetWorld(), WorldPatrolPoint2, 25.f, 12, FColor::Yellow, true);
+	DrawDebugSphere(GetWorld(), WorldPatrolPoint2, 2.f, 12, FColor::Yellow, false);
+
+	
 
 	//casting enemy controller
 	 EnemyController = Cast<AEnemyController>(GetController());
@@ -126,6 +128,8 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 		PlayHitMontage(FName("HitReactFront"));
 		SetStunned(true);
 	}
+
+	
 		
 
 	
